@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Substack Feed - RCK Analytics</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f6fa;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: #12192B;
+      color: white;
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: white;
+    }
+
+    .logo span { color: #4f8ef7; }
+
+    .vdivider {
+      width: 1px;
+      height: 22px;
+      background: rgba(255,255,255,0.2);
+    }
+
+    .header-subtitle {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .header-right {
+      text-align: right;
+    }
+
+    .stats-badge {
+      background: rgba(79,142,247,0.15);
+      border: 1px solid rgba(79,142,247,0.35);
+      color: #4f8ef7;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .last-updated {
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      margin-top: 4px;
+    }
+
+    /* ---- Controls ---- */
+    .controls {
+      background: white;
+      padding: 14px 32px;
+      border-bottom: 1px solid #e8eaed;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-wrap {
+      flex: 1;
+      min-width: 220px;
+      position: relative;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      padding: 9px 12px 9px 36px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      color: #1a1a2e;
+      transition: border 0.2s;
+    }
+
+    .search-wrap input:focus { border-color: #4f8ef7; }
+
+    .search-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9aa0a6;
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .date-filters { display: flex; gap: 6px; }
+
+    .date-btn {
+      padding: 8px 13px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: white;
+      font-size: 13px;
+      cursor: pointer;
+      color: #5f6368;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .date-btn:hover { border-color: #4f8ef7; color: #4f8ef7; }
+
+    .date-btn.active {
+      background: #12192B;
+      border-color: #12192B;
+      color: white;
+    }
+
+    .substack-select {
+      padding: 9px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      color: #1a1a2e;
+      cursor: pointer;
+      min-width: 190px;
+      transition: border 0.2s;
+      background: white;
+    }
+
+    .substack-select:focus { border-color: #4f8ef7; }
+
+    /* ---- Results bar ---- */
+    .results-bar {
+      padding: 9px 32px;
+      font-size: 13px;
+      color: #5f6368;
+      background: #f5f6fa;
+      border-bottom: 1px solid #e8eaed;
+    }
+
+    .results-bar b { color: #12192B; }
+
+    /* ---- Table ---- */
+    .table-wrap {
+      padding: 24px 32px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+    }
+
+    thead { background: #12192B; }
+
+    thead th {
+      padding: 13px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.75);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    thead th:hover { color: white; }
+    thead th.sorted { color: white; }
+
+    tbody tr {
+      border-bottom: 1px solid #f0f2f5;
+      transition: background 0.1s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8f9ff; }
+
+    tbody td {
+      padding: 11px 16px;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    .col-date {
+      width: 115px;
+      color: #6b7280;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .col-substack { width: 190px; }
+
+    .tag {
+      display: inline-block;
+      background: #eef2ff;
+      color: #3b5bdb;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      max-width: 175px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .col-title a {
+      color: #12192B;
+      text-decoration: none;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .col-title a:hover {
+      color: #4f8ef7;
+      text-decoration: underline;
+    }
+
+    .new-badge {
+      display: inline-block;
+      background: #dcfce7;
+      color: #15803d;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 8px;
+      vertical-align: middle;
+      letter-spacing: 0.3px;
+    }
+
+    /* ---- States ---- */
+    .loading, .empty-state {
+      text-align: center;
+      padding: 72px 20px;
+      color: #6b7280;
+    }
+
+    .spinner {
+      width: 38px;
+      height: 38px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #4f8ef7;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty-state h3 {
+      font-size: 17px;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo">RCK <span>Analytics</span></div>
+    <div class="vdivider"></div>
+    <div class="header-subtitle">Substack Intelligence Feed</div>
+  </div>
+  <div class="header-right">
+    <div class="stats-badge" id="stats-badge">Loading...</div>
+    <div class="last-updated" id="last-updated"></div>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <div class="search-wrap">
+    <span class="search-icon">&#128269;</span>
+    <input type="text" id="search-input" placeholder="Search title or substack..." oninput="applyFilters()">
+  </div>
+  <div class="date-filters">
+    <button class="date-btn" onclick="setDateFilter(1)">Today</button>
+    <button class="date-btn active" onclick="setDateFilter(7)">7 Days</button>
+    <button class="date-btn" onclick="setDateFilter(14)">14 Days</button>
+    <button class="date-btn" onclick="setDateFilter(30)">30 Days</button>
+    <button class="date-btn" onclick="setDateFilter(0)">All Time</button>
+  </div>
+  <select class="substack-select" id="substack-filter" onchange="applyFilters()">
+    <option value="">All Substacks</option>
+  </select>
+</div>
+
+<!-- Results bar -->
+<div class="results-bar" id="results-bar">Loading articles...</div>
+
+<!-- Table -->
+<div class="table-wrap">
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Fetching latest articles...</p>
+  </div>
+
+  <table id="articles-table" style="display:none">
+    <thead>
+      <tr>
+        <th class="sorted" onclick="sortBy('pubdate')" data-col="pubdate">Date &#9660;</th>
+        <th onclick="sortBy('substack')" data-col="substack">Substack &#8597;</th>
+        <th>Title</th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+
+  <div class="empty-state" id="empty-state" style="display:none">
+    <h3>No articles found</h3>
+    <p>Try adjusting your search or date range.</p>
+  </div>
+</div>
+
+<script>
+  let allArticles = [];
+  let activeDateFilter = 7;
+  let sortCol = 'pubdate';
+  let sortDir = -1; // -1 desc, 1 asc
+
+  async function loadArticles() {
+    try {
+      const res = await fetch('./data/articles.json?t=' + Date.now());
+      if (!res.ok) throw new Error('Failed to fetch');
+      allArticles = await res.json();
+
+      // Populate substack dropdown
+      const substacks = [...new Set(allArticles.map(a => a.substack))].sort();
+      const sel = document.getElementById('substack-filter');
+      substacks.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        sel.appendChild(opt);
+      });
+
+      // Last scraped date
+      const dates = allArticles.map(a => new Date(a.pubdate)).filter(d => !isNaN(d));
+      if (dates.length) {
+        const latest = new Date(Math.max(...dates));
+        document.getElementById('last-updated').textContent =
+          'Data up to ' + latest.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      document.getElementById('loading').style.display = 'none';
+      applyFilters();
+
+    } catch (e) {
+      document.getElementById('loading').innerHTML =
+        '<p>Could not load articles.json - make sure the scraper has run and data/ folder exists.</p>';
+    }
+  }
+
+  function setDateFilter(days) {
+    activeDateFilter = days;
+    document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const search = document.getElementById('search-input').value.toLowerCase().trim();
+    const substackVal = document.getElementById('substack-filter').value;
+    const now = new Date();
+    const cutoffNew = new Date(now); cutoffNew.setDate(cutoffNew.getDate() - 1);
+
+    let filtered = allArticles.filter(a => {
+      if (activeDateFilter > 0) {
+        const pub = new Date(a.pubdate);
+        const diffDays = (now - pub) / 86400000;
+        if (diffDays > activeDateFilter) return false;
+      }
+      if (substackVal && a.substack !== substackVal) return false;
+      if (search) {
+        const inTitle = (a.title || '').toLowerCase().includes(search);
+        const inSub = (a.substack || '').toLowerCase().includes(search);
+        if (!inTitle && !inSub) return false;
+      }
+      return true;
+    });
+
+    // Sort
+    filtered.sort((a, b) => {
+      let va = a[sortCol] || '', vb = b[sortCol] || '';
+      if (sortCol === 'pubdate') { va = new Date(va); vb = new Date(vb); }
+      if (va < vb) return sortDir;
+      if (va > vb) return -sortDir;
+      return 0;
+    });
+
+    // Render
+    const tbody = document.getElementById('table-body');
+    const table = document.getElementById('articles-table');
+    const empty = document.getElementById('empty-state');
+
+    if (filtered.length === 0) {
+      table.style.display = 'none';
+      empty.style.display = 'block';
+    } else {
+      table.style.display = 'table';
+      empty.style.display = 'none';
+      tbody.innerHTML = filtered.map(a => {
+        const pub = new Date(a.pubdate);
+        const isNew = pub >= cutoffNew;
+        const dateStr = isNaN(pub) ? a.pubdate :
+          pub.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        const safeTitle = (a.title || '').replace(/</g, '&lt;');
+        const safeSubstack = (a.substack || '').replace(/</g, '&lt;');
+        return `<tr>
+          <td class="col-date">${dateStr}</td>
+          <td class="col-substack"><span class="tag" title="${safeSubstack}">${safeSubstack}</span></td>
+          <td class="col-title">
+            <a href="${a.link}" target="_blank" rel="noopener noreferrer">${safeTitle}</a>
+            ${isNew ? '<span class="new-badge">NEW</span>' : ''}
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    const substackCount = new Set(filtered.map(a => a.substack)).size;
+    document.getElementById('stats-badge').textContent =
+      filtered.length + ' articles · ' + substackCount + ' substacks';
+    document.getElementById('results-bar').innerHTML =
+      'Showing <b>' + filtered.length + ' articles</b> across <b>' + substackCount + ' substacks</b>';
+  }
+
+  function sortBy(col) {
+    if (sortCol === col) { sortDir *= -1; } 
+    else { sortCol = col; sortDir = col === 'pubdate' ? -1 : 1; }
+
+    document.querySelectorAll('thead th').forEach(th => {
+      th.classList.remove('sorted');
+      if (th.dataset.col === col) {
+        th.classList.add('sorted');
+        th.innerHTML = (col === 'pubdate' ? 'Date' : 'Substack') +
+          ' ' + (sortDir === -1 ? '&#9660;' : '&#9650;');
+        th.setAttribute('onclick', `sortBy('${col}')`);
+      }
+    });
+    applyFilters();
+  }
+
+  loadArticles();
+</script>
+</body>
+</html>
