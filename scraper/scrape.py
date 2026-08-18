@@ -1,22 +1,14 @@
 import time
 start_time = time.time()
 
-import requests
-from bs4 import BeautifulSoup
+import feedparser
 import pandas as pd
-import random
 import logging
 import json
 import os
 from datetime import datetime, date
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
-
-user_agents_list = [
-    'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.83 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36'
-]
 
 # Paths - all relative to repo root
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -28,7 +20,7 @@ BACKUP_DIR = os.path.join(ROOT_DIR, "backups")
 os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
 os.makedirs(BACKUP_DIR, exist_ok=True)
 
-# --- Scrape ---
+# --- Scrape via RSS ---
 substacks = pd.read_excel(SOURCE_FILE, sheet_name='archives')
 articles = pd.DataFrame(columns=['title', 'link', 'pubdate', 'substack'])
 
@@ -36,52 +28,54 @@ for i in range(len(substacks)):
     name = substacks.iloc[i].Name
     url = substacks.iloc[i].URL
 
+    # Convert any URL format to RSS feed URL
+    base = url.split('/archive')[0].split('/feed')[0].rstrip('/')
+    feed_url = f"{base}/feed"
+
     try:
-        headers = {'User-Agent': random.choice(user_agents_list)}
-        response = requests.get(url, headers=headers, timeout=10)
+        feed = feedparser.parse(feed_url)
 
-        if response.status_code != 200:
-            logging.warning(f"Failed to fetch {url}: Status {response.status_code}")
+        if feed.bozo:
+            logging.warning(f"Bozo flag (minor XML issue, continuing): {feed_url}")
+
+        if not feed.entries:
+            logging.warning(f"No entries found - skipping: {feed_url}")
             continue
-
-        soup = BeautifulSoup(response.content, 'html.parser')
 
         titles, links, dates = [], [], []
 
-        for link in soup.find_all('a'):
-            if link.get('data-testid') == 'post-preview-title':
-                href = link.get('href')
-                text = link.string.strip() if link.string else ''
-                if href and text:
-                    links.append(href)
-                    titles.append(text)
+        for entry in feed.entries:
+            title = entry.get('title', '').strip()
+            link = entry.get('link', '').strip()
 
-        for date_tag in soup.find_all('time', class_='date-rtYe1v'):
-            datetime_val = date_tag.get('datetime')
-            if datetime_val:
-                dates.append(datetime_val.split('T')[0])
+            pub = entry.get('published_parsed') or entry.get('updated_parsed')
+            if pub:
+                pub_date = datetime(*pub[:3]).strftime('%Y-%m-%d')
+            else:
+                pub_date = None
 
-        min_len = min(len(titles), len(links), len(dates))
-        if min_len == 0:
-            logging.warning(f"No articles found for: {name}")
+            if title and link and pub_date:
+                titles.append(title)
+                links.append(link)
+                dates.append(pub_date)
+
+        if not titles:
+            logging.warning(f"No valid articles parsed for: {name}")
             continue
 
         df = pd.DataFrame({
-            'title': titles[:min_len],
-            'link': links[:min_len],
-            'pubdate': dates[:min_len]
+            'title': titles,
+            'link': links,
+            'pubdate': dates
         })
         df['substack'] = name
         df['pubdate'] = pd.to_datetime(df['pubdate'], errors='coerce')
 
-        if not df.empty:
-            articles = pd.concat([articles, df], ignore_index=True)
-            logging.info(f"{name} | {len(df)} articles | Total = {len(articles)}")
-
-        time.sleep(random.uniform(1, 3))
+        articles = pd.concat([articles, df], ignore_index=True)
+        logging.info(f"{name} | {feed_url} | {len(df)} articles | Total = {len(articles)}")
 
     except Exception as e:
-        logging.error(f"Error processing {url}: {e}")
+        logging.error(f"Error processing {feed_url}: {e}")
         continue
 
 articles.reset_index(drop=True, inplace=True)

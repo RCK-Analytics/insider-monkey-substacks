@@ -2,7 +2,7 @@
 
 Automated daily scraper + GitHub Pages dashboard for 300+ Substack newsletters.
 
-**Live dashboard:** `https://rck-analytics.github.io/substack-feed`
+**Live dashboard:** `https://rck-analytics.github.io/insider-monkey-substacks/`
 
 ---
 
@@ -26,8 +26,8 @@ Add two branches: `main` and `staging`.
 ### 2. Push these files
 
 ```
-git clone https://github.com/rck-analytics/substack-feed
-cd substack-feed
+git clone https://github.com/rck-analytics/insider-monkey-substacks
+cd insider-monkey-substacks
 # copy all files here
 git add .
 git commit -m "init: substack feed project"
@@ -52,7 +52,7 @@ git push origin main
 - Branch: `main` / `/ (root)`
 - Save
 
-Your dashboard will be live at: `https://rck-analytics.github.io/substack-feed`
+Your dashboard will be live at: `https://rck-analytics.github.io/insider-monkey-substacks`
 
 ### 5. Enable Actions write permissions
 
@@ -91,7 +91,7 @@ To test a scrape manually without waiting for 7 AM:
 ## File structure
 
 ```
-substack-feed/
+insider-monkey-substacks/
 - .github/workflows/
   - scrape-main.yml       # Production cron job
   - scrape-staging.yml    # Staging workflow
