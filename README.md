@@ -1,110 +1,38 @@
-# Substack Intelligence Feed - RCK Analytics
+<p align="center">
+  <img src="favicon.jpg" alt="RCK Analytics" width="80" style="border-radius: 12px;" />
+</p>
 
-Automated daily scraper + GitHub Pages dashboard for 300+ Substack newsletters.
+<h1 align="center">Substack Intelligence Feed</h1>
+<p align="center">
+  <strong>RCK Analytics</strong> · Automated daily scraper + live dashboard for 300+ Substack newsletters
+</p>
 
-**Live dashboard:** `https://rck-analytics.github.io/insider-monkey-substacks/`
+<p align="center">
+  <a href="https://rck-analytics.github.io/insider-monkey-substacks/">🔗 Live Dashboard</a> &nbsp;·&nbsp;
+  <a href="https://rckanalytics.com">🌐 rckanalytics.com</a> &nbsp;·&nbsp;
+  <a href="https://www.linkedin.com/company/rck-analytics">💼 LinkedIn</a>
+</p>
+
+---
+
+## What this does
+
+Every morning at 9:00 AM IST, a Python scraper runs automatically on a local machine, fetches the latest articles from 300+ Substack newsletters via RSS (with a BeautifulSoup fallback for feeds that block RSS), deduplicates by article link, and pushes the result to this repo. GitHub Pages serves a clean dashboard the whole team can open in any browser - no login, no Power BI, no manual steps.
 
 ---
 
 ## How it works
 
-1. GitHub Actions runs `scraper/scrape.py` every morning at 7:00 AM IST
-2. Scraper hits all Substack archive URLs from `source_links.xlsx`
-3. New articles are deduplicated and appended to `data/articles.json`
-4. On the 1st of every month, `articles.json` is wiped and rebuilt fresh
-5. GitHub Pages serves `index.html` which reads the JSON and renders the dashboard
-
----
-
-## Setup (one time)
-
-### 1. Create the repo
-
-In the `rck-analytics` GitHub org, create a new repo called `substack-feed`.
-Add two branches: `main` and `staging`.
-
-### 2. Push these files
-
 ```
-git clone https://github.com/rck-analytics/insider-monkey-substacks
-cd insider-monkey-substacks
-# copy all files here
-git add .
-git commit -m "init: substack feed project"
-git push origin main
-```
-
-### 3. Add source_links.xlsx to the repo
-
-Copy your `source_links.xlsx` file (with the `archives` sheet containing Name and URL columns)
-to the root of the repo and commit it.
-
-```
-git add source_links.xlsx
-git commit -m "add: source links"
-git push origin main
-```
-
-### 4. Enable GitHub Pages
-
-- Go to repo Settings -> Pages
-- Source: Deploy from a branch
-- Branch: `main` / `/ (root)`
-- Save
-
-Your dashboard will be live at: `https://rck-analytics.github.io/insider-monkey-substacks`
-
-### 5. Enable Actions write permissions
-
-- Go to repo Settings -> Actions -> General
-- Under "Workflow permissions" select "Read and write permissions"
-- Save
-
-This lets the GitHub Actions bot commit the updated `articles.json` back to the repo.
-
----
-
-## Branches
-
-| Branch | Purpose |
-|--------|---------|
-| `main` | Production - runs daily at 7 AM IST automatically |
-| `staging` | Testing - runs on every push to staging, or manually |
-
-To test a scrape manually without waiting for 7 AM:
-- Go to Actions tab in GitHub
-- Select "Scrape Substacks (Production)" or "(Staging)"
-- Click "Run workflow"
-
----
-
-## Data logic
-
-| Scenario | Behaviour |
-|----------|-----------|
-| Daily runs | New articles appended, duplicates removed by link |
-| 1st of month | Full overwrite - fresh start |
-| First ever run | Creates articles.json from scratch |
-
----
-
-## File structure
-
-```
-insider-monkey-substacks/
-- .github/workflows/
-  - scrape-main.yml       # Production cron job
-  - scrape-staging.yml    # Staging workflow
-- scraper/
-  - scrape.py             # Main scraper
-  - requirements.txt      # Python dependencies
-- data/
-  - articles.json         # Dashboard data (auto-updated)
-- backups/
-  - minsider_backup_YYYY-MM-DD.xlsx  # Daily Excel backups (gitignored)
-- index.html              # The dashboard
-- source_links.xlsx       # Your 300+ Substack URLs (you add this)
-- README.md
+9:00 AM IST - Windows Task Scheduler triggers run.bat
+            -> scraper/scrape.py runs locally
+            -> tries RSS feed for each Substack
+            -> falls back to requests + BeautifulSoup if RSS blocked
+            -> deduplicates by article link (link = UID)
+            -> saves data/articles.json
+            -> git commit + push to main
+            -> GitHub Pages detects change
+            -> dashboard updated within 2 minutes
 ```
 
 ---
@@ -113,8 +41,96 @@ insider-monkey-substacks/
 
 - Default view: last 7 days, sorted newest first
 - Date filters: Today / 7 Days / 14 Days / 30 Days / All Time
-- Search: filters by title or substack name
-- Substack dropdown: filter to a single source
+- Search: filter by title or substack name
+- Substack dropdown: focus on a single source
 - NEW badge: highlights articles from the last 24 hours
 - Clickable titles: open article in new tab
-- Article + substack count in header
+- Live article + substack count in header
+
+---
+
+## Scraper logic
+
+| Scenario | Behaviour |
+|---|---|
+| RSS works | Parse feed, add only new links |
+| RSS blocked | Fallback to requests + BeautifulSoup on archive URL |
+| Link already in JSON | Skip - link is the unique ID |
+| No existing JSON | Fresh build from scratch |
+
+No monthly overwrites. Data only ever grows. Every article link is unique.
+
+---
+
+## File structure
+
+```
+insider-monkey-substacks/
+├── .github/
+│   └── workflows/
+│       ├── scrape-main.yml       # Disabled - runs locally via Task Scheduler
+│       └── scrape-staging.yml    # Manual trigger for testing
+├── scraper/
+│   ├── scrape.py                 # Main scraper - RSS + fallback
+│   └── requirements.txt          # Python dependencies
+├── data/
+│   └── articles.json             # Dashboard data - auto updated daily
+├── backups/
+│   └── minsider_backup_YYYY-MM-DD.xlsx  # Daily Excel backups
+├── index.html                    # The dashboard
+├── favicon.jpg                   # RCK Analytics logo
+├── source_links.xlsx             # 380 Substack URLs (Name + URL columns, archives sheet)
+└── README.md
+```
+
+---
+
+## Local setup
+
+### Requirements
+
+- Python 3.11+
+- Git configured with push access to this repo
+- Windows Task Scheduler (for automation)
+
+### Install dependencies
+
+```bash
+cd scraper
+pip install -r requirements.txt
+```
+
+### Run manually
+
+```bash
+cmd /c "D:\Insider Monkey\run.bat"
+```
+
+### Task Scheduler
+
+Task is set to run `run.bat` daily at 9:00 AM IST. If the machine is off at that time, it runs as soon as the machine turns on - configured via "Run task as soon as possible after a scheduled start is missed."
+
+---
+
+## Branches
+
+| Branch | Purpose |
+|---|---|
+| `main` | Production - runs daily via local Task Scheduler |
+| `staging` | Testing - trigger manually from Actions tab |
+
+---
+
+## Coverage
+
+- **380** Substacks in `source_links.xlsx`
+- **~330** covered per daily run (~87%)
+- **~6000+** articles in `articles.json`
+- Uncovered substacks are either paywalled, deleted, or have RSS fully disabled
+
+---
+
+<p align="center">
+  Built by <a href="https://rckanalytics.com"><strong>RCK Analytics</strong></a> &nbsp;·&nbsp;
+  <a href="https://www.linkedin.com/company/rck-analytics">LinkedIn</a>
+</p>
