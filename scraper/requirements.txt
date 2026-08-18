@@ -4,5 +4,3 @@ pandas
 openpyxl
 lxml
 feedparser
-pandas
-openpyxl
