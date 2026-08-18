@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Substack Feed - RCK Analytics</title>
+  <link rel="icon" type="image/jpeg" href="favicon.jpg">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -12,6 +13,8 @@
       background: #f5f6fa;
       color: #1a1a2e;
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     /* ---- Header ---- */
@@ -39,6 +42,7 @@
       font-weight: 700;
       letter-spacing: 0.5px;
       color: white;
+      text-decoration: none;
     }
 
     .logo span { color: #4f8ef7; }
@@ -54,9 +58,7 @@
       color: rgba(255,255,255,0.6);
     }
 
-    .header-right {
-      text-align: right;
-    }
+    .header-right { text-align: right; }
 
     .stats-badge {
       background: rgba(79,142,247,0.15);
@@ -165,6 +167,7 @@
     /* ---- Table ---- */
     .table-wrap {
       padding: 24px 32px;
+      flex: 1;
     }
 
     table {
@@ -280,6 +283,61 @@
       color: #374151;
       margin-bottom: 6px;
     }
+
+    /* ---- Footer ---- */
+    .footer {
+      background: #12192B;
+      color: rgba(255,255,255,0.5);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 13px;
+      margin-top: auto;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer-logo {
+      font-weight: 700;
+      color: white;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .footer-logo span { color: #4f8ef7; }
+
+    .footer-sep {
+      color: rgba(255,255,255,0.2);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .footer-links a {
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.15s;
+    }
+
+    .footer-links a:hover { color: white; }
+
+    .footer-right {
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+    }
   </style>
 </head>
 <body>
@@ -287,7 +345,7 @@
 <!-- Header -->
 <div class="header">
   <div class="header-left">
-    <div class="logo">RCK <span>Analytics</span></div>
+    <a href="https://rckanalytics.com" target="_blank" class="logo">RCK <span>Analytics</span></a>
     <div class="vdivider"></div>
     <div class="header-subtitle">Substack Intelligence Feed</div>
   </div>
@@ -342,11 +400,33 @@
   </div>
 </div>
 
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-left">
+    <a href="https://rckanalytics.com" target="_blank" class="footer-logo">RCK <span>Analytics</span></a>
+    <span class="footer-sep">|</span>
+    <span>Substack Intelligence Feed</span>
+  </div>
+  <div class="footer-links">
+    <a href="https://rckanalytics.com" target="_blank">
+      <!-- Globe icon -->
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      rckanalytics.com
+    </a>
+    <a href="https://www.linkedin.com/company/rck-analytics" target="_blank">
+      <!-- LinkedIn icon -->
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+      LinkedIn
+    </a>
+  </div>
+  <div class="footer-right" id="footer-updated">Updated daily at 9:00 AM IST</div>
+</footer>
+
 <script>
   let allArticles = [];
   let activeDateFilter = 7;
   let sortCol = 'pubdate';
-  let sortDir = -1; // -1 desc, 1 asc
+  let sortDir = -1;
 
   async function loadArticles() {
     try {
@@ -354,7 +434,6 @@
       if (!res.ok) throw new Error('Failed to fetch');
       allArticles = await res.json();
 
-      // Populate substack dropdown
       const substacks = [...new Set(allArticles.map(a => a.substack))].sort();
       const sel = document.getElementById('substack-filter');
       substacks.forEach(s => {
@@ -364,12 +443,12 @@
         sel.appendChild(opt);
       });
 
-      // Last scraped date
       const dates = allArticles.map(a => new Date(a.pubdate)).filter(d => !isNaN(d));
       if (dates.length) {
         const latest = new Date(Math.max(...dates));
-        document.getElementById('last-updated').textContent =
-          'Data up to ' + latest.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        const dateStr = latest.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        document.getElementById('last-updated').textContent = 'Data up to ' + dateStr;
+        document.getElementById('footer-updated').textContent = 'Last updated: ' + dateStr + ' | Refreshed daily at 9:00 AM IST';
       }
 
       document.getElementById('loading').style.display = 'none';
@@ -409,7 +488,6 @@
       return true;
     });
 
-    // Sort
     filtered.sort((a, b) => {
       let va = a[sortCol] || '', vb = b[sortCol] || '';
       if (sortCol === 'pubdate') { va = new Date(va); vb = new Date(vb); }
@@ -418,7 +496,6 @@
       return 0;
     });
 
-    // Render
     const tbody = document.getElementById('table-body');
     const table = document.getElementById('articles-table');
     const empty = document.getElementById('empty-state');
@@ -455,9 +532,8 @@
   }
 
   function sortBy(col) {
-    if (sortCol === col) { sortDir *= -1; } 
+    if (sortCol === col) { sortDir *= -1; }
     else { sortCol = col; sortDir = col === 'pubdate' ? -1 : 1; }
-
     document.querySelectorAll('thead th').forEach(th => {
       th.classList.remove('sorted');
       if (th.dataset.col === col) {
