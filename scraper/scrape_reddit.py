@@ -64,7 +64,12 @@ for RSS_URL in RSS_URLS:
             skipped += 1
             continue
 
-        new_articles.append({"substack": SOURCE_NAME, "title": title, "link": link, "pubdate": pub_date})
+        # extract r/subreddit from link e.g. https://www.reddit.com/r/stocks/comments/...
+        try:
+            subreddit = 'r/' + link.split('/r/')[1].split('/')[0]
+        except Exception:
+            subreddit = SOURCE_NAME
+        new_articles.append({"substack": subreddit, "title": title, "link": link, "pubdate": pub_date})
         seen_links.add(link)
 
 logging.info(f"New articles: {len(new_articles)} | Already seen (skipped): {skipped}")
