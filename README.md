@@ -25,6 +25,7 @@ Two scrapers run on separate schedules. The Substack scraper runs once daily at 
 
 ```
 8:45 AM IST  - Windows Task Scheduler triggers run.bat (local machine)
+             -> git pull origin main (picks up latest reddit_articles.json)
              -> scraper/scrape.py runs locally
                 -> tries RSS feed for each Substack
                 -> falls back to requests + BeautifulSoup if RSS blocked
@@ -59,7 +60,6 @@ Every 3 hours - GitHub Actions cron triggers scrape-reddit.yml
 
 ### Reddit tab (separate, no mixing with Substack)
 - Same filtering and sorting controls as Substack tab
-- Posts shown with full datetime (date + time, e.g. "19 Aug 2026 · 09:15 AM")
 - Visited link tracking works independently
 - Source tags styled differently (orange) to distinguish Reddit from Substacks
 - Switching tabs resets filters cleanly
@@ -108,6 +108,7 @@ insider-monkey-substacks/
 │   └── reddit_articles.json        # Reddit data - updated every 3 hours via GitHub Actions
 ├── backups/
 │   └── minsider_backup_YYYY-MM-DD.xlsx  # Daily Excel backups (Substack)
+├── run.bat                         # Windows batch file to pull, scrape, and push (Substack)
 ├── index.html                      # The dashboard (Substack + Reddit tabs)
 ├── favicon.jpg                     # RCK Analytics logo
 ├── source_links.xlsx               # 380 Substack URLs (Name + URL columns, archives sheet)
@@ -122,7 +123,7 @@ insider-monkey-substacks/
 
 - Python 3.11+
 - Git configured with push access to this repo
-- Windows Task Scheduler (for automation)
+- Windows machine with Task Scheduler
 
 ### Install dependencies
 
@@ -131,15 +132,39 @@ cd scraper
 pip install -r requirements.txt
 ```
 
+### Configure run.bat
+
+`run.bat` is included in the repo root. Before using it, open it and update the three paths at the top to match your machine:
+
+```bat
+set REPO_DIR=D:\Insider Monkey\insider-monkey-substacks
+set VENV_PYTHON=D:\Insider Monkey\venv\Scripts\python.exe
+set SCRIPT=D:\Insider Monkey\insider-monkey-substacks\scraper\scrape.py
+```
+
 ### Run manually
 
 ```bash
 cmd /c "D:\Insider Monkey\run.bat"
 ```
 
-### Task Scheduler
+### Task Scheduler setup
 
-Task is set to run `run.bat` daily at 8:45 AM IST. If the machine is off at that time, it runs as soon as the machine turns on — configured via "Run task as soon as possible after a scheduled start is missed."
+1. Open **Task Scheduler** → click **Create Task**
+2. **General tab**
+   - Name: `RCK Substack Scraper`
+   - Check **Run whether user is logged on or not**
+3. **Triggers tab** → New
+   - Begin the task: **On a schedule**
+   - Daily at **8:45 AM**
+   - Check **Enabled**
+4. **Actions tab** → New
+   - Action: **Start a program**
+   - Program/script: `cmd`
+   - Add arguments: `/c "D:\Insider Monkey\run.bat"`
+5. **Settings tab**
+   - Check **Run task as soon as possible after a scheduled start is missed** — this ensures it catches up if the machine was off at 8:45 AM
+6. Click **OK** and enter your Windows password when prompted
 
 ---
 
@@ -176,12 +201,12 @@ The Reddit scraper runs entirely on GitHub's servers — no local machine needed
     "substack": "Reddit/stocks",
     "title": "Post Title",
     "link": "https://...",
-    "pubdate": "2026-08-19 14:35"
+    "pubdate": "2026-08-19"
   }
 ]
 ```
 
-Reddit articles include full `HH:MM` timestamps; Substack articles store date only (RSS feeds rarely expose exact times).
+Both store date only. Article link is always the unique ID used for deduplication.
 
 ---
 
