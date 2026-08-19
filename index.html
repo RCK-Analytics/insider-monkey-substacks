@@ -488,7 +488,7 @@
   // ── State ──────────────────────────────────────────────────────────────────
   let substackArticles = [];
   let redditArticles   = [];
-  let activePage       = 'substack';   // 'substack' | 'reddit'
+
   let activeDateFilter = 7;
   let sortCol  = 'pubdate';
   let sortDir  = -1;
@@ -496,6 +496,9 @@
   // visited links — persisted in localStorage so it survives refresh
   const VISITED_KEY = 'rck_visited_links';
   let visitedLinks  = new Set(JSON.parse(localStorage.getItem(VISITED_KEY) || '[]'));
+
+  const PAGE_KEY = 'rck_active_page';
+  let activePage = localStorage.getItem(PAGE_KEY) || 'substack';
 
   function markVisited(link) {
     visitedLinks.add(link);
@@ -519,6 +522,14 @@
       }
 
       document.getElementById('loading').style.display = 'none';
+
+      // restore active tab UI
+      document.getElementById('tab-substack').classList.toggle('active', activePage === 'substack');
+      document.getElementById('tab-reddit').classList.toggle('active', activePage === 'reddit');
+      const label = activePage === 'substack' ? 'Substack Intelligence Feed' : 'Reddit Stocks Feed';
+      document.getElementById('header-subtitle').textContent = label;
+      document.getElementById('footer-label').textContent = label;
+
       renderPage();
 
     } catch (e) {
@@ -530,6 +541,7 @@
   // ── Tab switching ──────────────────────────────────────────────────────────
   function switchPage(page) {
     activePage = page;
+    localStorage.setItem(PAGE_KEY, page);
     activeDateFilter = 7;
     sortCol = 'pubdate';
     sortDir = -1;
