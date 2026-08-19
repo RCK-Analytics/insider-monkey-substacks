@@ -16,12 +16,11 @@ DATA_FILE = os.path.join(ROOT_DIR, "data", "reddit_articles.json")
 os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
 
 # ── Config ────────────────────────────────────────────────────────────────────
-# Top-100 posts from the last 24 hours across the custom feed
 RSS_URL = "https://www.reddit.com/user/famous-feedback-11/m/stocks/top/.rss?t=day&limit=100"
-SOURCE_NAME = "Reddit/stocks"  # shown as "substack" column in dashboard
+SOURCE_NAME = "Reddit/stocks"
 # ──────────────────────────────────────────────────────────────────────────────
 
-# --- Load existing articles.json ---
+# --- Load existing reddit_articles.json ---
 if os.path.exists(DATA_FILE):
     with open(DATA_FILE, "r", encoding="utf-8") as f:
         existing_records = json.load(f)
@@ -30,7 +29,7 @@ if os.path.exists(DATA_FILE):
 else:
     existing_records = []
     seen_links = set()
-    logging.info("No existing articles.json — fresh start")
+    logging.info("No existing reddit_articles.json — fresh start")
 
 # --- Fetch RSS ---
 logging.info(f"Fetching: {RSS_URL}")
@@ -53,12 +52,12 @@ for entry in feed.entries:
     title = (entry.get("title") or "").strip()
     link  = (entry.get("link")  or "").strip()
 
-    # Reddit RSS gives both published_parsed and updated_parsed
     pub = entry.get("published_parsed") or entry.get("updated_parsed")
     if pub:
-        pub_date = datetime(*pub[:6], tzinfo=timezone.utc).strftime("%Y-%m-%d")
+        # Store full datetime: "2026-08-19 14:35"
+        pub_date = datetime(*pub[:6], tzinfo=timezone.utc).strftime("%Y-%m-%d %H:%M")
     else:
-        pub_date = date.today().isoformat()
+        pub_date = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
 
     if not title or not link:
         continue
@@ -79,7 +78,6 @@ logging.info(f"New articles: {len(new_articles)} | Already seen (skipped): {skip
 
 # --- Merge, deduplicate, sort ---
 combined = existing_records + new_articles
-# deduplicate by link just to be safe
 seen = set()
 deduped = []
 for r in combined:

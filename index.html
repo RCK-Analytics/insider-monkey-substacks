@@ -17,7 +17,7 @@
       flex-direction: column;
     }
 
-    /* ---- Header ---- */
+    /* ── Header ── */
     .header {
       background: #12192B;
       color: white;
@@ -76,7 +76,39 @@
       margin-top: 4px;
     }
 
-    /* ---- Controls ---- */
+    /* ── Page tabs (Substack / Reddit) ── */
+    .page-tabs {
+      background: #12192B;
+      padding: 0 32px;
+      display: flex;
+      gap: 4px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .page-tab {
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.45);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      user-select: none;
+    }
+
+    .page-tab:hover { color: rgba(255,255,255,0.8); }
+
+    .page-tab.active {
+      color: white;
+      border-bottom-color: #4f8ef7;
+    }
+
+    .page-tab .tab-icon { font-size: 15px; }
+
+    /* ── Controls ── */
     .controls {
       background: white;
       padding: 14px 32px;
@@ -138,7 +170,7 @@
       color: white;
     }
 
-    .substack-select {
+    .source-select {
       padding: 9px 12px;
       border: 1px solid #e0e0e0;
       border-radius: 8px;
@@ -151,9 +183,9 @@
       background: white;
     }
 
-    .substack-select:focus { border-color: #4f8ef7; }
+    .source-select:focus { border-color: #4f8ef7; }
 
-    /* ---- Results bar ---- */
+    /* ── Results bar ── */
     .results-bar {
       padding: 9px 32px;
       font-size: 13px;
@@ -164,7 +196,7 @@
 
     .results-bar b { color: #12192B; }
 
-    /* ---- Table ---- */
+    /* ── Table ── */
     .table-wrap {
       padding: 24px 32px;
       flex: 1;
@@ -205,6 +237,24 @@
     tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: #f8f9ff; }
 
+    /* visited row styling */
+    tbody tr.visited-row {
+      background: #f9f9f9;
+    }
+
+    tbody tr.visited-row td.col-date,
+    tbody tr.visited-row td.col-title a {
+      color: #9aa0a6;
+    }
+
+    tbody tr.visited-row td.col-title a {
+      text-decoration: none;
+    }
+
+    tbody tr.visited-row:hover {
+      background: #f3f4f8;
+    }
+
     tbody td {
       padding: 11px 16px;
       font-size: 14px;
@@ -212,13 +262,13 @@
     }
 
     .col-date {
-      width: 115px;
+      width: 145px;
       color: #6b7280;
       font-size: 13px;
       white-space: nowrap;
     }
 
-    .col-substack { width: 190px; }
+    .col-source { width: 190px; }
 
     .tag {
       display: inline-block;
@@ -232,6 +282,12 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    /* Reddit tag colour */
+    .tag.reddit-tag {
+      background: #fff0eb;
+      color: #c0440a;
     }
 
     .col-title a {
@@ -259,7 +315,7 @@
       letter-spacing: 0.3px;
     }
 
-    /* ---- States ---- */
+    /* ── Loading / empty ── */
     .loading, .empty-state {
       text-align: center;
       padding: 72px 20px;
@@ -284,7 +340,7 @@
       margin-bottom: 6px;
     }
 
-    /* ---- Footer ---- */
+    /* ── Footer ── */
     .footer {
       background: #12192B;
       color: rgba(255,255,255,0.5);
@@ -313,9 +369,7 @@
 
     .footer-logo span { color: #4f8ef7; }
 
-    .footer-sep {
-      color: rgba(255,255,255,0.2);
-    }
+    .footer-sep { color: rgba(255,255,255,0.2); }
 
     .footer-links {
       display: flex;
@@ -345,9 +399,9 @@
 <!-- Header -->
 <div class="header">
   <div class="header-left">
-    <a href="https://rckanalytics.com" target="_blank" class="logo">RCK <span>Analytics</span></a>
+    <a href="https://rckanalytics.com" class="logo">RCK<span>.</span></a>
     <div class="vdivider"></div>
-    <div class="header-subtitle">Substack Intelligence Feed</div>
+    <div class="header-subtitle" id="header-subtitle">Substack Intelligence Feed</div>
   </div>
   <div class="header-right">
     <div class="stats-badge" id="stats-badge">Loading...</div>
@@ -355,21 +409,31 @@
   </div>
 </div>
 
+<!-- Page Tabs -->
+<div class="page-tabs">
+  <div class="page-tab active" id="tab-substack" onclick="switchPage('substack')">
+    <span class="tab-icon">📰</span> Substack
+  </div>
+  <div class="page-tab" id="tab-reddit" onclick="switchPage('reddit')">
+    <span class="tab-icon">🟠</span> Reddit
+  </div>
+</div>
+
 <!-- Controls -->
 <div class="controls">
   <div class="search-wrap">
     <span class="search-icon">&#128269;</span>
-    <input type="text" id="search-input" placeholder="Search title or substack..." oninput="applyFilters()">
+    <input type="text" id="search-input" placeholder="Search title or source..." oninput="applyFilters()">
   </div>
   <div class="date-filters">
-    <button class="date-btn" onclick="setDateFilter(1)">Today</button>
-    <button class="date-btn active" onclick="setDateFilter(7)">7 Days</button>
-    <button class="date-btn" onclick="setDateFilter(14)">14 Days</button>
-    <button class="date-btn" onclick="setDateFilter(30)">30 Days</button>
-    <button class="date-btn" onclick="setDateFilter(0)">All Time</button>
+    <button class="date-btn" onclick="setDateFilter(1, event)">Today</button>
+    <button class="date-btn active" onclick="setDateFilter(7, event)">7 Days</button>
+    <button class="date-btn" onclick="setDateFilter(14, event)">14 Days</button>
+    <button class="date-btn" onclick="setDateFilter(30, event)">30 Days</button>
+    <button class="date-btn" onclick="setDateFilter(0, event)">All Time</button>
   </div>
-  <select class="substack-select" id="substack-filter" onchange="applyFilters()">
-    <option value="">All Substacks</option>
+  <select class="source-select" id="source-filter" onchange="applyFilters()">
+    <option value="">All Sources</option>
   </select>
 </div>
 
@@ -387,7 +451,7 @@
     <thead>
       <tr>
         <th class="sorted" onclick="sortBy('pubdate')" data-col="pubdate">Date &#9660;</th>
-        <th onclick="sortBy('substack')" data-col="substack">Substack &#8597;</th>
+        <th onclick="sortBy('substack')" data-col="substack">Source &#8597;</th>
         <th>Title</th>
       </tr>
     </thead>
@@ -403,18 +467,16 @@
 <!-- Footer -->
 <footer class="footer">
   <div class="footer-left">
-    <a href="https://rckanalytics.com" target="_blank" class="footer-logo">RCK <span>Analytics</span></a>
+    <a href="https://rckanalytics.com" class="footer-logo">RCK<span>.</span></a>
     <span class="footer-sep">|</span>
-    <span>Substack Intelligence Feed</span>
+    <span id="footer-label">Substack Intelligence Feed</span>
   </div>
   <div class="footer-links">
     <a href="https://rckanalytics.com" target="_blank">
-      <!-- Globe icon -->
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
       rckanalytics.com
     </a>
-    <a href="https://www.linkedin.com/company/rck-analytics" target="_blank">
-      <!-- LinkedIn icon -->
+    <a href="https://linkedin.com/company/rck-analytics" target="_blank">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
       LinkedIn
     </a>
@@ -423,44 +485,103 @@
 </footer>
 
 <script>
-  let allArticles = [];
+  // ── State ──────────────────────────────────────────────────────────────────
+  let substackArticles = [];
+  let redditArticles   = [];
+  let activePage       = 'substack';   // 'substack' | 'reddit'
   let activeDateFilter = 7;
-  let sortCol = 'pubdate';
-  let sortDir = -1;
+  let sortCol  = 'pubdate';
+  let sortDir  = -1;
 
-  async function loadArticles() {
+  // visited links — persisted in localStorage so it survives refresh
+  const VISITED_KEY = 'rck_visited_links';
+  let visitedLinks  = new Set(JSON.parse(localStorage.getItem(VISITED_KEY) || '[]'));
+
+  function markVisited(link) {
+    visitedLinks.add(link);
+    localStorage.setItem(VISITED_KEY, JSON.stringify([...visitedLinks]));
+  }
+
+  // ── Load data ──────────────────────────────────────────────────────────────
+  async function loadAll() {
     try {
-      const res = await fetch('./data/articles.json?t=' + Date.now());
-      if (!res.ok) throw new Error('Failed to fetch');
-      allArticles = await res.json();
+      // Load both feeds in parallel
+      const [subRes, redRes] = await Promise.allSettled([
+        fetch('./data/articles.json?t=' + Date.now()),
+        fetch('./data/reddit_articles.json?t=' + Date.now())
+      ]);
 
-      const substacks = [...new Set(allArticles.map(a => a.substack))].sort();
-      const sel = document.getElementById('substack-filter');
-      substacks.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s;
-        opt.textContent = s;
-        sel.appendChild(opt);
-      });
-
-      const dates = allArticles.map(a => new Date(a.pubdate)).filter(d => !isNaN(d));
-      if (dates.length) {
-        const latest = new Date(Math.max(...dates));
-        const dateStr = latest.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-        document.getElementById('last-updated').textContent = 'Data up to ' + dateStr;
-        document.getElementById('footer-updated').textContent = 'Last updated: ' + dateStr + ' | Refreshed daily at 8:45 AM IST';
+      if (subRes.status === 'fulfilled' && subRes.value.ok) {
+        substackArticles = await subRes.value.json();
+      }
+      if (redRes.status === 'fulfilled' && redRes.value.ok) {
+        redditArticles = await redRes.value.json();
       }
 
       document.getElementById('loading').style.display = 'none';
-      applyFilters();
+      renderPage();
 
     } catch (e) {
       document.getElementById('loading').innerHTML =
-        '<p>Could not load articles.json - make sure the scraper has run and data/ folder exists.</p>';
+        '<p>Could not load data — make sure articles.json exists in data/ folder.</p>';
     }
   }
 
-  function setDateFilter(days) {
+  // ── Tab switching ──────────────────────────────────────────────────────────
+  function switchPage(page) {
+    activePage = page;
+    activeDateFilter = 7;
+    sortCol = 'pubdate';
+    sortDir = -1;
+
+    // reset date buttons
+    document.querySelectorAll('.date-btn').forEach((b, i) => {
+      b.classList.toggle('active', i === 1); // "7 Days" is index 1
+    });
+
+    // reset search
+    document.getElementById('search-input').value = '';
+
+    // update tabs
+    document.getElementById('tab-substack').classList.toggle('active', page === 'substack');
+    document.getElementById('tab-reddit').classList.toggle('active', page === 'reddit');
+
+    // update subtitle + footer label
+    const label = page === 'substack' ? 'Substack Intelligence Feed' : 'Reddit Stocks Feed';
+    document.getElementById('header-subtitle').textContent = label;
+    document.getElementById('footer-label').textContent = label;
+
+    renderPage();
+  }
+
+  // ── Render source dropdown + table for active page ─────────────────────────
+  function renderPage() {
+    const articles = activePage === 'substack' ? substackArticles : redditArticles;
+    const dropdownLabel = activePage === 'substack' ? 'All Substacks' : 'All Subreddits';
+
+    // rebuild source dropdown
+    const sel = document.getElementById('source-filter');
+    sel.innerHTML = `<option value="">${dropdownLabel}</option>`;
+    const sources = [...new Set(articles.map(a => a.substack))].sort();
+    sources.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      sel.appendChild(opt);
+    });
+
+    // update last-updated from latest pubdate
+    const dates = articles.map(a => new Date(a.pubdate)).filter(d => !isNaN(d));
+    if (dates.length) {
+      const latest = new Date(Math.max(...dates));
+      document.getElementById('last-updated').textContent =
+        'Data up to ' + latest.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    applyFilters();
+  }
+
+  // ── Filters + render table ─────────────────────────────────────────────────
+  function setDateFilter(days, event) {
     activeDateFilter = days;
     document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
     event.target.classList.add('active');
@@ -468,21 +589,21 @@
   }
 
   function applyFilters() {
-    const search = document.getElementById('search-input').value.toLowerCase().trim();
-    const substackVal = document.getElementById('substack-filter').value;
-    const now = new Date();
+    const articles = activePage === 'substack' ? substackArticles : redditArticles;
+    const search   = document.getElementById('search-input').value.toLowerCase().trim();
+    const srcVal   = document.getElementById('source-filter').value;
+    const now      = new Date();
     const cutoffNew = new Date(now); cutoffNew.setDate(cutoffNew.getDate() - 1);
 
-    let filtered = allArticles.filter(a => {
+    let filtered = articles.filter(a => {
       if (activeDateFilter > 0) {
         const pub = new Date(a.pubdate);
-        const diffDays = (now - pub) / 86400000;
-        if (diffDays > activeDateFilter) return false;
+        if ((now - pub) / 86400000 > activeDateFilter) return false;
       }
-      if (substackVal && a.substack !== substackVal) return false;
+      if (srcVal && a.substack !== srcVal) return false;
       if (search) {
-        const inTitle = (a.title || '').toLowerCase().includes(search);
-        const inSub = (a.substack || '').toLowerCase().includes(search);
+        const inTitle = (a.title   || '').toLowerCase().includes(search);
+        const inSub   = (a.substack|| '').toLowerCase().includes(search);
         if (!inTitle && !inSub) return false;
       }
       return true;
@@ -506,29 +627,49 @@
     } else {
       table.style.display = 'table';
       empty.style.display = 'none';
+
       tbody.innerHTML = filtered.map(a => {
-        const pub = new Date(a.pubdate);
-        const isNew = pub >= cutoffNew;
-        const dateStr = isNaN(pub) ? a.pubdate :
-          pub.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-        const safeTitle = (a.title || '').replace(/</g, '&lt;');
-        const safeSubstack = (a.substack || '').replace(/</g, '&lt;');
-        return `<tr>
+        const pub    = new Date(a.pubdate);
+        const isNew  = pub >= cutoffNew;
+        const isVisited = visitedLinks.has(a.link);
+
+        // Format date — show time too if pubdate has it (reddit does, substack doesn't)
+        let dateStr;
+        if (isNaN(pub)) {
+          dateStr = a.pubdate;
+        } else if (a.pubdate && a.pubdate.includes(' ')) {
+          // has time component e.g. "2026-08-19 14:35"
+          dateStr = pub.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                  + ' · ' + pub.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+        } else {
+          dateStr = pub.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        const safeTitle    = (a.title   || '').replace(/</g, '&lt;');
+        const safeSubstack = (a.substack|| '').replace(/</g, '&lt;');
+        const isReddit     = activePage === 'reddit';
+        const tagClass     = isReddit ? 'tag reddit-tag' : 'tag';
+
+        return `<tr class="${isVisited ? 'visited-row' : ''}" data-link="${a.link}">
           <td class="col-date">${dateStr}</td>
-          <td class="col-substack"><span class="tag" title="${safeSubstack}">${safeSubstack}</span></td>
+          <td class="col-source"><span class="${tagClass}" title="${safeSubstack}">${safeSubstack}</span></td>
           <td class="col-title">
-            <a href="${a.link}" target="_blank" rel="noopener noreferrer">${safeTitle}</a>
+            <a href="${a.link}" target="_blank" rel="noopener noreferrer"
+               onclick="markVisited('${a.link.replace(/'/g, "\\'")}'); this.closest('tr').classList.add('visited-row');">
+              ${safeTitle}
+            </a>
             ${isNew ? '<span class="new-badge">NEW</span>' : ''}
           </td>
         </tr>`;
       }).join('');
     }
 
-    const substackCount = new Set(filtered.map(a => a.substack)).size;
+    const srcCount = new Set(filtered.map(a => a.substack)).size;
+    const srcWord  = activePage === 'substack' ? 'substacks' : 'subreddits';
     document.getElementById('stats-badge').textContent =
-      filtered.length + ' articles · ' + substackCount + ' substacks';
+      filtered.length + ' articles · ' + srcCount + ' ' + srcWord;
     document.getElementById('results-bar').innerHTML =
-      'Showing <b>' + filtered.length + ' articles</b> across <b>' + substackCount + ' substacks</b>';
+      'Showing <b>' + filtered.length + ' articles</b> across <b>' + srcCount + ' ' + srcWord + '</b>';
   }
 
   function sortBy(col) {
@@ -538,7 +679,7 @@
       th.classList.remove('sorted');
       if (th.dataset.col === col) {
         th.classList.add('sorted');
-        th.innerHTML = (col === 'pubdate' ? 'Date' : 'Substack') +
+        th.innerHTML = (col === 'pubdate' ? 'Date' : 'Source') +
           ' ' + (sortDir === -1 ? '&#9660;' : '&#9650;');
         th.setAttribute('onclick', `sortBy('${col}')`);
       }
@@ -546,7 +687,7 @@
     applyFilters();
   }
 
-  loadArticles();
+  loadAll();
 </script>
 </body>
 </html>
