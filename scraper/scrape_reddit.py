@@ -16,7 +16,7 @@ DATA_FILE = os.path.join(ROOT_DIR, "data", "reddit_articles.json")
 os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
 
 # ── Config ────────────────────────────────────────────────────────────────────
-RSS_URL = "https://www.reddit.com/user/famous-feedback-11/m/stocks/top/.rss?t=day&limit=100"
+RSS_URL = "https://www.reddit.com/user/famous-feedback-11/m/stocks/new/.rss?limit=100"
 SOURCE_NAME = "Reddit/stocks"
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -54,10 +54,9 @@ for entry in feed.entries:
 
     pub = entry.get("published_parsed") or entry.get("updated_parsed")
     if pub:
-        # Store full datetime: "2026-08-19 14:35"
-        pub_date = datetime(*pub[:6], tzinfo=timezone.utc).strftime("%Y-%m-%d %H:%M")
+        pub_date = datetime(*pub[:3], tzinfo=timezone.utc).strftime("%Y-%m-%d")
     else:
-        pub_date = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+        pub_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     if not title or not link:
         continue
