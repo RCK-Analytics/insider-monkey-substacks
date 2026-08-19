@@ -489,7 +489,7 @@
   let substackArticles = [];
   let redditArticles   = [];
 
-  let activeDateFilter = 7;
+
   let sortCol  = 'pubdate';
   let sortDir  = -1;
 
@@ -499,6 +499,9 @@
 
   const PAGE_KEY = 'rck_active_page';
   let activePage = localStorage.getItem(PAGE_KEY) || 'substack';
+
+  const DATE_KEY = 'rck_date_filter';
+  let activeDateFilter = parseInt(localStorage.getItem(DATE_KEY) ?? '7');
 
   function markVisited(link) {
     visitedLinks.add(link);
@@ -530,6 +533,12 @@
       document.getElementById('header-subtitle').textContent = label;
       document.getElementById('footer-label').textContent = label;
 
+      // restore active date button
+      const dayVals = [1, 7, 14, 30, 0];
+      document.querySelectorAll('.date-btn').forEach((b, i) => {
+        b.classList.toggle('active', dayVals[i] === activeDateFilter);
+      });
+
       renderPage();
 
     } catch (e) {
@@ -543,6 +552,7 @@
     activePage = page;
     localStorage.setItem(PAGE_KEY, page);
     activeDateFilter = 7;
+    localStorage.setItem(DATE_KEY, 7);
     sortCol = 'pubdate';
     sortDir = -1;
 
@@ -595,6 +605,7 @@
   // ── Filters + render table ─────────────────────────────────────────────────
   function setDateFilter(days, event) {
     activeDateFilter = days;
+    localStorage.setItem(DATE_KEY, days);
     document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
     event.target.classList.add('active');
     applyFilters();
