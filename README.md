@@ -17,14 +17,14 @@
 
 ## What this does
 
-Every morning at 9:00 AM IST, a Python scraper runs automatically on a local machine, fetches the latest articles from 300+ Substack newsletters via RSS (with a BeautifulSoup fallback for feeds that block RSS), deduplicates by article link, and pushes the result to this repo. GitHub Pages serves a clean dashboard the whole team can open in any browser - no login, no Power BI, no manual steps.
+Every morning at 8:45 AM IST, a Python scraper runs automatically on a local machine, fetches the latest articles from 300+ Substack newsletters via RSS (with a BeautifulSoup fallback for feeds that block RSS), deduplicates by article link, and pushes the result to this repo. GitHub Pages serves a clean dashboard the whole team can open in any browser - no login, no Power BI, no manual steps.
 
 ---
 
 ## How it works
 
 ```
-9:00 AM IST - Windows Task Scheduler triggers run.bat
+8:45 AM IST - Windows Task Scheduler triggers run.bat
             -> scraper/scrape.py runs locally
             -> tries RSS feed for each Substack
             -> falls back to requests + BeautifulSoup if RSS blocked
@@ -108,7 +108,7 @@ cmd /c "D:\Insider Monkey\run.bat"
 
 ### Task Scheduler
 
-Task is set to run `run.bat` daily at 9:00 AM IST. If the machine is off at that time, it runs as soon as the machine turns on - configured via "Run task as soon as possible after a scheduled start is missed."
+Task is set to run `run.bat` daily at 8:45 AM IST. If the machine is off at that time, it runs as soon as the machine turns on - configured via "Run task as soon as possible after a scheduled start is missed."
 
 ---
 
