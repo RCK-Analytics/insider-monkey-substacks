@@ -16,7 +16,10 @@ DATA_FILE = os.path.join(ROOT_DIR, "data", "reddit_articles.json")
 os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
 
 # ── Config ────────────────────────────────────────────────────────────────────
-RSS_URL = "https://www.reddit.com/user/famous-feedback-11/m/stocks/new/.rss?limit=100"
+RSS_URLS = [
+    "https://www.reddit.com/user/famous-feedback-11/m/stocks/new/.rss?limit=100",
+    "https://www.reddit.com/user/famous-feedback-11/m/stocks/top/.rss?limit=100",
+]
 SOURCE_NAME = "Reddit/stocks"
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -32,46 +35,37 @@ else:
     logging.info("No existing reddit_articles.json — fresh start")
 
 # --- Fetch RSS ---
-logging.info(f"Fetching: {RSS_URL}")
-
-feed = feedparser.parse(
-    RSS_URL,
-    agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-)
-
-if feed.bozo and not feed.entries:
-    logging.error(f"RSS parse failed: {feed.bozo_exception}")
-    exit(1)
-
-logging.info(f"Feed returned {len(feed.entries)} entries")
-
 new_articles = []
 skipped = 0
 
-for entry in feed.entries:
-    title = (entry.get("title") or "").strip()
-    link  = (entry.get("link")  or "").strip()
+for RSS_URL in RSS_URLS:
+    logging.info(f"Fetching: {RSS_URL}")
+    feed = feedparser.parse(
+        RSS_URL,
+        agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    )
 
-    pub = entry.get("published_parsed") or entry.get("updated_parsed")
-    if pub:
-        pub_date = datetime(*pub[:3], tzinfo=timezone.utc).strftime("%Y-%m-%d")
-    else:
-        pub_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-
-    if not title or not link:
+    if feed.bozo and not feed.entries:
+        logging.error(f"RSS parse failed for {RSS_URL}: {feed.bozo_exception}")
         continue
 
-    if link in seen_links:
-        skipped += 1
-        continue
+    logging.info(f"Feed returned {len(feed.entries)} entries")
 
-    new_articles.append({
-        "substack": SOURCE_NAME,
-        "title":    title,
-        "link":     link,
-        "pubdate":  pub_date,
-    })
-    seen_links.add(link)
+    for entry in feed.entries:
+        title = (entry.get("title") or "").strip()
+        link  = (entry.get("link")  or "").strip()
+
+        pub = entry.get("published_parsed") or entry.get("updated_parsed")
+        pub_date = datetime(*pub[:3], tzinfo=timezone.utc).strftime("%Y-%m-%d") if pub else datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+        if not title or not link:
+            continue
+        if link in seen_links:
+            skipped += 1
+            continue
+
+        new_articles.append({"substack": SOURCE_NAME, "title": title, "link": link, "pubdate": pub_date})
+        seen_links.add(link)
 
 logging.info(f"New articles: {len(new_articles)} | Already seen (skipped): {skipped}")
 
