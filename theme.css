@@ -1,0 +1,239 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   theme.css — dark mode + skeleton loader for the RCK feed dashboard
+   Loaded AFTER the inline <style> in index.html, so it only overrides.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --sk:        #e9ecf2;   /* skeleton bar */
+  --sk-line:   #f0f2f5;   /* skeleton row divider */
+  --sk-card:   #ffffff;   /* skeleton card background */
+}
+
+/* ── Header theme toggle ───────────────────────────────────────────────── */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06);
+  color: white;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.theme-toggle:hover {
+  background: rgba(79,142,247,0.2);
+  border-color: rgba(79,142,247,0.5);
+}
+
+.theme-toggle:active { transform: scale(0.92); }
+
+/* ── Skeleton loader (replaces the spinner while data loads) ───────────────
+   Pure CSS. Only applies while the spinner is present; if the fetch fails,
+   index.html swaps #loading's content for an error <p> and the skeleton
+   disappears automatically. Browsers without :has() just keep the spinner. */
+#loading:has(.spinner) {
+  padding: 0;
+  text-align: left;
+  background: var(--sk-card);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+  animation: rck-pulse 1.4s ease-in-out infinite;
+}
+
+#loading:has(.spinner) .spinner,
+#loading:has(.spinner) p {
+  display: none;
+}
+
+/* fake table header */
+#loading:has(.spinner)::before {
+  content: "";
+  display: block;
+  height: 44px;
+  background: #12192B;
+}
+
+/* fake rows: 10 rows x 56px, drawn with stacked gradients
+   layers: row divider · date · source pill · title */
+#loading:has(.spinner)::after {
+  content: "";
+  display: block;
+  height: 560px;
+  background-image:
+    linear-gradient(to bottom, transparent 55px, var(--sk-line) 55px),
+    linear-gradient(to bottom, transparent 22px, var(--sk) 22px, var(--sk) 34px, transparent 34px),
+    linear-gradient(to bottom, transparent 18px, var(--sk) 18px, var(--sk) 38px, transparent 38px),
+    linear-gradient(to bottom, transparent 22px, var(--sk) 22px, var(--sk) 34px, transparent 34px);
+  background-size:
+    100% 56px,
+    90px 56px,
+    120px 56px,
+    50% 56px;
+  background-position:
+    0 0,
+    16px 0,
+    161px 0,
+    351px 0;
+  background-repeat: repeat-y;
+}
+
+@keyframes rck-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+@media (max-width: 700px) {
+  #loading:has(.spinner)::after {
+    background-size: 100% 56px, 70px 56px, 0 0, 60% 56px;
+    background-position: 0 0, 16px 0, 0 0, 106px 0;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DARK THEME
+   ══════════════════════════════════════════════════════════════════════════ */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --sk:        #262e42;
+  --sk-line:   #232a3b;
+  --sk-card:   #161b26;
+}
+
+html[data-theme="dark"] body {
+  background: #0b0f1a;
+  color: #e6e8ee;
+}
+
+/* header / tabs / footer are already navy — just deepen them slightly */
+html[data-theme="dark"] .header,
+html[data-theme="dark"] .page-tabs,
+html[data-theme="dark"] .footer {
+  background: #0f1627;
+}
+
+html[data-theme="dark"] .header {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.6);
+}
+
+html[data-theme="dark"] .page-tabs {
+  border-top-color: rgba(255,255,255,0.06);
+}
+
+/* controls */
+html[data-theme="dark"] .controls {
+  background: #121827;
+  border-bottom-color: #232a3b;
+}
+
+html[data-theme="dark"] .search-wrap input,
+html[data-theme="dark"] .source-select {
+  background: #0b0f1a;
+  border-color: #2a3247;
+  color: #e6e8ee;
+}
+
+html[data-theme="dark"] .search-wrap input::placeholder { color: #6b7389; }
+
+html[data-theme="dark"] .search-wrap input:focus,
+html[data-theme="dark"] .source-select:focus {
+  border-color: #4f8ef7;
+}
+
+html[data-theme="dark"] .search-icon { color: #6b7389; }
+
+html[data-theme="dark"] .date-btn {
+  background: #0b0f1a;
+  border-color: #2a3247;
+  color: #9aa3b8;
+}
+
+html[data-theme="dark"] .date-btn:hover {
+  border-color: #4f8ef7;
+  color: #4f8ef7;
+}
+
+html[data-theme="dark"] .date-btn.active {
+  background: #4f8ef7;
+  border-color: #4f8ef7;
+  color: #ffffff;
+}
+
+/* results bar */
+html[data-theme="dark"] .results-bar {
+  background: #0b0f1a;
+  border-bottom-color: #232a3b;
+  color: #8b93a7;
+}
+
+html[data-theme="dark"] .results-bar b { color: #e6e8ee; }
+
+/* table */
+html[data-theme="dark"] table {
+  background: #161b26;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.5);
+}
+
+html[data-theme="dark"] thead { background: #1c2540; }
+
+html[data-theme="dark"] tbody tr { border-bottom-color: #232a3b; }
+html[data-theme="dark"] tbody tr:hover { background: #1b2233; }
+
+html[data-theme="dark"] tbody tr.visited-row { background: #121721; }
+html[data-theme="dark"] tbody tr.visited-row:hover { background: #171d2b; }
+
+html[data-theme="dark"] .col-date { color: #8b93a7; }
+
+html[data-theme="dark"] tbody tr.visited-row td.col-date,
+html[data-theme="dark"] tbody tr.visited-row td.col-title a {
+  color: #5d657a;
+}
+
+html[data-theme="dark"] .col-title a { color: #e6e8ee; }
+html[data-theme="dark"] .col-title a:hover { color: #6ea3ff; }
+
+html[data-theme="dark"] .tag {
+  background: rgba(79,142,247,0.15);
+  color: #8fb4ff;
+}
+
+html[data-theme="dark"] .tag.reddit-tag {
+  background: rgba(255,122,61,0.15);
+  color: #ff9a6b;
+}
+
+html[data-theme="dark"] .new-badge {
+  background: rgba(34,197,94,0.15);
+  color: #4ade80;
+}
+
+/* loading / empty */
+html[data-theme="dark"] .loading,
+html[data-theme="dark"] .empty-state { color: #8b93a7; }
+
+html[data-theme="dark"] .empty-state h3 { color: #d5d9e4; }
+
+html[data-theme="dark"] .spinner {
+  border-color: #262e42;
+  border-top-color: #4f8ef7;
+}
+
+html[data-theme="dark"] #loading:has(.spinner) {
+  box-shadow: 0 1px 6px rgba(0,0,0,0.5);
+}
+
+html[data-theme="dark"] #loading:has(.spinner)::before {
+  background: #1c2540;
+}
