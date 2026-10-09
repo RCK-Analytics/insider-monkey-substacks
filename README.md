@@ -51,7 +51,7 @@ Every 3 hours - GitHub Actions cron triggers scrape-reddit.yml
 ### Substack tab
 - Default view: last 7 days, sorted newest first
 - Date filters: Today / 7 Days / 14 Days / 30 Days / All Time
-- Search: filter by title or substack name
+- Search: filter by title or substack name (✕ to clear)
 - Substack dropdown: focus on a single source
 - NEW badge: highlights articles from the last 24 hours
 - Clickable titles: open article in new tab
@@ -59,7 +59,7 @@ Every 3 hours - GitHub Actions cron triggers scrape-reddit.yml
 - Live article + substack count in header
 
 ### Reddit tab (separate, no mixing with Substack)
-- Same filtering and sorting controls as Substack tab
+- Same filtering and sorting controls as Substack tab (including clear search)
 - Visited link tracking works independently
 - Source tags styled differently (orange) to distinguish Reddit from Substacks
 - Switching tabs resets filters cleanly
@@ -221,9 +221,9 @@ Both store date only. Article link is always the unique ID used for deduplicatio
 
 ## Coverage
 
-- **380** Substacks in `source_links.xlsx`
+- **405** Substacks in `source_links.xlsx`
 - **~330** covered per daily run (~87%)
-- **~6000+** articles in `articles.json`
+- **~8000+** articles in `articles.json`
 - Uncovered Substacks are either paywalled, deleted, or have RSS fully disabled
 - Reddit/stocks feed fetched fresh every 3 hours, 24/7
 

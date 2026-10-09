@@ -340,6 +340,8 @@
       margin-bottom: 6px;
     }
 
+    /* Built by Ani · "It works. Don't touch it." 🙏 */
+
     /* ── Footer ── */
     .footer {
       background: #12192B;
@@ -426,7 +428,8 @@
 <div class="controls">
   <div class="search-wrap">
     <span class="search-icon">&#128269;</span>
-    <input type="text" id="search-input" placeholder="Search title or source..." oninput="applyFilters()">
+    <input type="text" id="search-input" placeholder="Search title or source..." oninput="applyFilters(); toggleClear()">
+    <span class="clear-btn" id="clear-btn" onclick="clearSearch()" title="Clear search">&#10005;</span>
   </div>
   <div class="date-filters">
     <button class="date-btn" onclick="setDateFilter(1, event)">Today</button>
@@ -566,6 +569,7 @@
 
     // reset search
     document.getElementById('search-input').value = '';
+    toggleClear();
 
     // update tabs
     document.getElementById('tab-substack').classList.toggle('active', page === 'substack');
@@ -710,6 +714,17 @@
         th.setAttribute('onclick', `sortBy('${col}')`);
       }
     });
+    applyFilters();
+  }
+
+  function toggleClear() {
+    const val = document.getElementById('search-input').value;
+    document.getElementById('clear-btn').style.display = val ? 'flex' : 'none';
+  }
+
+  function clearSearch() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('clear-btn').style.display = 'none';
     applyFilters();
   }
 
