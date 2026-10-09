@@ -102,10 +102,17 @@ for i in range(len(substacks)):
 
     try:
         # --- Try RSS first ---
-        feed = feedparser.parse(
-            feed_url,
-            agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
-        )
+        logging.info(f"Fetching: {name}")   # optional: shows which source is running
+        try:
+            r = requests.get(
+                feed_url,
+                headers={'User-Agent': random.choice(user_agents_list)},
+                timeout=(5, 15)
+            )
+            feed = feedparser.parse(r.content)
+        except requests.RequestException as e:
+            logging.warning(f"RSS request failed for {name}: {e}")
+            feed = feedparser.FeedParserDict(entries=[], bozo=True)
 
         rss_ok = (not feed.bozo or feed.entries) and len(feed.entries) > 0
 
