@@ -221,8 +221,8 @@ Both store date only. Article link is always the unique ID used for deduplicatio
 
 ## Coverage
 
-- **380** Substacks in `source_links.xlsx`
-- **~330** covered per daily run (~87%)
+- **405** Substacks in `source_links.xlsx`
+- **~350** covered per daily run (~87%)
 - **~6000+** articles in `articles.json`
 - Uncovered Substacks are either paywalled, deleted, or have RSS fully disabled
 - Reddit/stocks feed fetched fresh every 3 hours, 24/7
