@@ -5,9 +5,9 @@ echo %date% %time%
 echo ============================================
 
 :: --- Config ---
-set REPO_DIR=D:\Insider Monkey\insider-monkey-substacks
-set VENV_PYTHON=D:\Insider Monkey\venv\Scripts\python.exe
-set SCRIPT=D:\Insider Monkey\insider-monkey-substacks\scraper\scrape.py
+set REPO_DIR=D:\RCK Analytics - Development Projects\insider_monkey\insider-monkey-substacks    
+set VENV_PYTHON=D:\RCK Analytics - Development Projects\insider_monkey\insider-monkey-substacks\venv\Scripts\python.exe
+set SCRIPT=D:\RCK Analytics - Development Projects\insider_monkey\insider-monkey-substacks\scraper\scrape.py
 
 :: Never open vim/editor - accept default messages automatically
 set GIT_EDITOR=true
